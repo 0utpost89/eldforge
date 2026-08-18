@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Eldforge</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; height: 100%;
+    background-color: #2E3138;
+    background-image:
+      linear-gradient(335deg, #262930 23px, transparent 23px),
+      linear-gradient(155deg, #262930 23px, transparent 23px),
+      linear-gradient(335deg, #262930 23px, transparent 23px),
+      linear-gradient(155deg, #262930 23px, transparent 23px);
+    background-size: 58px 58px;
+    background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
+  }
+  #root { height: 100vh; }
+  input:focus { outline: none; }
+  button { font-family: inherit; cursor: pointer; }
+  @keyframes wobble {
+    0% { transform: translate(0,0) rotate(0deg); }
+    20% { transform: translate(-6px,3px) rotate(-1.4deg); }
+    40% { transform: translate(5px,-3px) rotate(1.4deg); }
+    60% { transform: translate(-4px,2px) rotate(-0.8deg); }
+    80% { transform: translate(3px,-2px) rotate(0.8deg); }
+    100% { transform: translate(0,0) rotate(0deg); }
+  }
+  .setlog-wobble { animation: wobble 0.4s ease; }
+  .eldforge-grain {
+    position: absolute; inset: 0; pointer-events: none; z-index: 50;
+    opacity: 0.5; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+  .eldforge-vignette {
+    position: absolute; inset: 0; pointer-events: none; z-index: 49;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%);
+  }
+  .rivet {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #7a7a7a, #161616);
+    box-shadow: 0 1px 1px rgba(0,0,0,0.6);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+/* TOKENS */
+const T = {
+  bg: "#14171C",
+  surface: "#1C2028",
+  surfaceRaised: "#242933",
+  line: "#2E3440",
+  accent: "#FF6A2B",
+  teal: "#3AA6A0",
+  text: "#F2F0EA",
+  textMute: "#8B92A0",
+  textFaint: "#565D6B",
+};
+
+/* INLINE ICONS (no external icon lib needed) */
+const Icon = ({ children, size = 18, color = "currentColor", strokeWidth = 2, style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+       strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+    {children}
+  </svg>
+);
+const ChevronRight = (p) => <Icon {...p}><polyline points="9 18 15 12 9 6" /></Icon>;
+const ChevronLeft = (p) => <Icon {...p}><polyline points="15 18 9 12 15 6" /></Icon>;
+const Check = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12" /></Icon>;
+const ArrowLeft = (p) => <Icon {...p}><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></Icon>;
+const History = (p) => <Icon {...p}><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l4 2" /></Icon>;
+const Dumbbell = (p) => <Icon {...p}><path d="M6.5 6.5 17.5 17.5" /><path d="M2.5 2.5 6.5 6.5" /><path d="M17.5 17.5 21.5 21.5" /><rect x="3.5" y="3.5" width="6" height="6" rx="1" transform="rotate(-45 6.5 6.5)"/><rect x="14.5" y="14.5" width="6" height="6" rx="1" transform="rotate(-45 17.5 17.5)"/></Icon>;
+const Trash2 = (p) => <Icon {...p}><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></Icon>;
+const Shuffle = (p) => <Icon {...p}><polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /><line x1="4" y1="4" x2="9" y2="9" /></Icon>;
+
+/* EXERCISE DATA */
+const DAYS = [
+  { id: "push", label: "Push", sub: "Shoulders · Chest · Triceps" },
+  { id: "pull", label: "Pull", sub: "Back · Biceps · Rear Delts" },
+  { id: "legs", label: "Legs", sub: "Quads · Glutes · Calves" },
+  { id: "full", label: "Full Body", sub: "Total Body · Core" },
+];
+
+const EX = {
+  push: [
+    { id: "shoulder-press", name: "Standing Shoulder Press", type: "reps", sets: 4, targetReps: "8-12", videoId: "eYHPM-wWYKs", alts: [
+      { id: "arnold-press", name: "Arnold Press", videoId: "ris9tKqMwgU" },
+      { id: "single-arm-press", name: "Single-Arm Shoulder Press", videoId: "JyJJLEnCcUo" },
+    ] },
+    { id: "chest-squeeze", name: "Standing Chest Squeeze Press", type: "reps", sets: 3, targetReps: "10-12", videoId: "OjJ0So34qtE", alts: [
+      { id: "floor-press", name: "Dumbbell Floor Press", videoId: "qHCI9rK7HqM" },
+    ] },
+    { id: "tricep-ext", name: "Seated Overhead Tricep Extension", type: "reps", sets: 3, targetReps: "12", videoId: "dxdr8iSRLA8", alts: [
+      { id: "standing-tricep-ext", name: "Standing Overhead Tricep Extension", videoId: "6I8v2frZTIg" },
+      { id: "tricep-kickback", name: "Tricep Kickback", videoId: "Cw2qX47wRY0" },
+    ] },
+    { id: "pushups", name: "Push-Ups", type: "reps", sets: 3, targetReps: "max", videoId: "WDIpL0pjun0", alts: [
+      { id: "diamond-pushups", name: "Diamond Push-Ups", videoId: "_4EGPVJuqfA" },
+    ] },
+  ],
+  pull: [
+    { id: "rows", name: "Bent-Over Dumbbell Rows", type: "reps", sets: 4, targetReps: "10-12", videoId: "c-gt-zzoa_A", alts: [
+      { id: "single-arm-row", name: "Single-Arm Dumbbell Row", videoId: "gfUg6qWohTk" },
+    ] },
+    { id: "curls", name: "Standing Bicep Curls", type: "reps", sets: 3, targetReps: "12", videoId: "ykJmrZ5v0Oo", alts: [
+      { id: "hammer-curls", name: "Hammer Curls", videoId: "4BRAf2BajWw" },
+    ] },
+    { id: "rear-delt", name: "Seated Rear Delt Flyes", type: "reps", sets: 3, targetReps: "12", videoId: "KoRDmXocJII", alts: [
+      { id: "standing-rear-delt", name: "Standing Bent-Over Rear Delt Fly", videoId: "yqvsu1YAi0Q" },
+    ] },
+    { id: "reverse-plank", name: "Reverse Plank Hold", type: "time", sets: 3, targetSeconds: 30, videoId: "uUEKLhpJd1Q", alts: [
+      { id: "superman-hold", name: "Superman Hold", videoId: "LZoWdePF1NQ" },
+    ] },
+  ],
+  legs: [
+    { id: "goblet-squat", name: "Goblet Squats", type: "reps", sets: 4, targetReps: "10-12", videoId: "gCESNsDsbqk", alts: [
+      { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", videoId: "TEN65PjaP0Q" },
+    ] },
+    { id: "reverse-lunge", name: "Reverse Lunges", type: "reps", sets: 3, targetReps: "10 / leg", videoId: "Q2k3kYbtOcI", alts: [
+      { id: "walking-lunges", name: "Walking Lunges", videoId: "_qSuiZ62vqI" },
+    ] },
+    { id: "step-ups", name: "Step-Ups", type: "reps", sets: 3, targetReps: "10 / leg", videoId: "DxUNi119Qzs", alts: [
+      { id: "lateral-step-up", name: "Lateral Step-Up", videoId: "Pk7ngkIQ6n0" },
+    ] },
+    { id: "calf-raise", name: "Standing Calf Raises", type: "reps", sets: 3, targetReps: "15", videoId: "wxwY7GXxL4k", alts: [
+      { id: "single-leg-calf-raise", name: "Single-Leg Calf Raise", videoId: "u1Yc75YdiJA" },
+    ] },
+  ],
+  full: [
+    { id: "thrusters", name: "Dumbbell Thrusters", type: "reps", sets: 3, targetReps: "10", videoId: "eDNt3biU9I4", alts: [
+      { id: "squat-to-press", name: "Squat to Press", videoId: "ffmPh_FsU8A" },
+    ] },
+    { id: "renegade-row", name: "Renegade Rows", type: "reps", sets: 3, targetReps: "8 / side", videoId: "wTqlJ0aoJlM", alts: [
+      { id: "bear-crawl", name: "Bear Crawl Hold", videoId: "lRolga8vTyc" },
+    ] },
+    { id: "plank", name: "Plank", type: "time", sets: 3, targetSeconds: 40, videoId: "mwlp75MS6Rg", alts: [
+      { id: "side-plank", name: "Side Plank", videoId: "0M-erHBl48U" },
+    ] },
+    { id: "mountain-climbers", name: "Mountain Climbers", type: "reps", sets: 3, targetReps: "20", videoId: "hq_0YlyfqGM", alts: [
+      { id: "bicycle-crunches", name: "Bicycle Crunches", videoId: "z2GXKmhXYl8" },
+    ] },
+  ],
+};
+
+/* DAILY QUOTES — consistency & mindset, one shown per day, cycles through the year */
+const QUOTES = [
+  { q: "Discipline is choosing between what you want now and what you want most.", a: "Abraham Lincoln" },
+  { q: "We are what we repeatedly do. Excellence is a habit, not an act.", a: "Aristotle" },
+  { q: "You do not rise to the level of your goals. You fall to the level of your systems.", a: "James Clear" },
+  { q: "Small disciplines repeated with consistency every day lead to great achievements.", a: "John Maxwell" },
+  { q: "It's not that I'm so smart, it's that I stay with problems longer.", a: "Albert Einstein" },
+  { q: "The successful warrior is the average man with laser-like focus.", a: "Bruce Lee" },
+  { q: "Motivation is what gets you started. Habit is what keeps you going.", a: "Jim Ryun" },
+  { q: "Well begun is half done.", a: "Aristotle" },
+  { q: "Consistency is what transforms average into excellence.", a: "Unknown" },
+  { q: "The pain of discipline weighs ounces; the pain of regret weighs tons.", a: "Jim Rohn" },
+  { q: "A river cuts through rock not because of its power, but its persistence.", a: "Jim Watkins" },
+  { q: "Show up. Do the work. Repeat. That's the whole plan.", a: "Unknown" },
+  { q: "You don't have to be great to start, but you have to start to be great.", a: "Zig Ziglar" },
+  { q: "Every action you take is a vote for the type of person you wish to become.", a: "James Clear" },
+  { q: "The man who moves a mountain begins by carrying away small stones.", a: "Confucius" },
+  { q: "Progress, not perfection.", a: "Unknown" },
+  { q: "What you do every day matters more than what you do once in a while.", a: "Gretchen Rubin" },
+  { q: "There is no substitute for hard work.", a: "Thomas Edison" },
+  { q: "Patience, persistence and perspiration make an unbeatable combination.", a: "Napoleon Hill" },
+  { q: "You can't build a reputation on what you're going to do.", a: "Henry Ford" },
+  { q: "The groundwork for all happiness is good health.", a: "Leigh Hunt" },
+  { q: "Strength does not come from winning. Your struggles develop your strengths.", a: "Arnold Schwarzenegger" },
+  { q: "It always seems impossible until it's done.", a: "Nelson Mandela" },
+  { q: "The body achieves what the mind believes.", a: "Unknown" },
+  { q: "Do the hard jobs first. The easy jobs will take care of themselves.", a: "Dale Carnegie" },
+  { q: "Fall seven times, stand up eight.", a: "Japanese Proverb" },
+  { q: "One day or day one. You decide.", a: "Unknown" },
+  { q: "Nothing will work unless you do.", a: "Maya Angelou" },
+  { q: "Slow progress is still progress.", a: "Unknown" },
+  { q: "The successful man will profit from his mistakes and try again.", a: "Dale Carnegie" },
+  { q: "You have power over your mind, not outside events.", a: "Marcus Aurelius" },
+  { q: "Whether you think you can or you think you can't, you're right.", a: "Henry Ford" },
+  { q: "Discipline equals freedom.", a: "Jocko Willink" },
+  { q: "The obstacle is the way.", a: "Marcus Aurelius" },
+  { q: "Amateurs sit and wait for inspiration. The rest of us get up and go to work.", a: "Stephen King" },
+  { q: "Endurance is one of the most difficult disciplines, but it is to the one who endures that the final victory comes.", a: "Buddha" },
+  { q: "Champions keep playing until they get it right.", a: "Billie Jean King" },
+  { q: "The difference between the impossible and the possible lies in a person's determination.", a: "Tommy Lasorda" },
+  { q: "Get comfortable being uncomfortable.", a: "Unknown" },
+  { q: "You're never a loser until you quit trying.", a: "Mike Ditka" },
+  { q: "Action is the foundational key to all success.", a: "Pablo Picasso" },
+  { q: "Don't wish it were easier. Wish you were better.", a: "Jim Rohn" },
+  { q: "The pain you feel today will be the strength you feel tomorrow.", a: "Unknown" },
+  { q: "Master your habits and you master your life.", a: "Unknown" },
+  { q: "It's not about having time. It's about making time.", a: "Unknown" },
+  { q: "Do something today that your future self will thank you for.", a: "Sean Patrick Flanery" },
+  { q: "Habits are the compound interest of self-improvement.", a: "James Clear" },
+  { q: "Nobody cares, work harder.", a: "Unknown" },
+  { q: "The only bad workout is the one that didn't happen.", a: "Unknown" },
+  { q: "Success is the sum of small efforts repeated day in and day out.", a: "Robert Collier" },
+  { q: "You must expect great things of yourself before you can do them.", a: "Michael Jordan" },
+  { q: "A year from now you'll wish you had started today.", a: "Karen Lamb" },
+  { q: "Dwell not on the past, but let it teach you.", a: "Unknown" },
+  { q: "There is no elevator to success. You have to take the stairs.", a: "Unknown" },
+  { q: "Whatever you can do, or dream you can, begin it.", a: "Johann Wolfgang von Goethe" },
+  { q: "Strength grows in the moments when you think you can't go on but keep going.", a: "Unknown" },
+  { q: "The greatest wealth is health.", a: "Virgil" },
+  { q: "Take care of your body. It's the only place you have to live.", a: "Jim Rohn" },
+  { q: "Discipline is the bridge between goals and accomplishment.", a: "Jim Rohn" },
+  { q: "The struggle you're in today is developing the strength you need for tomorrow.", a: "Robert Tew" },
+  { q: "Consistency over intensity.", a: "Unknown" },
+  { q: "Don't count the days, make the days count.", a: "Muhammad Ali" },
+  { q: "It's not whether you get knocked down, it's whether you get up.", a: "Vince Lombardi" },
+  { q: "Strength doesn't come from what you can do. It comes from overcoming what you thought you couldn't.", a: "Rikki Rogers" },
+  { q: "You are your only limit.", a: "Unknown" },
+  { q: "Nothing worth having comes easy.", a: "Theodore Roosevelt" },
+  { q: "Little by little, one travels far.", a: "J.R.R. Tolkien" },
+  { q: "Persistence guarantees that results are inevitable.", a: "Paramahansa Yogananda" },
+  { q: "The work you put in today builds the person you become tomorrow.", a: "Unknown" },
+  { q: "Winners are not people who never fail, but people who never quit.", a: "Unknown" },
+  { q: "Excellence is not a singular act but a habit.", a: "Aristotle" },
+  { q: "Do the work. The results will follow.", a: "Unknown" },
+  { q: "You will never always be motivated, so learn to be disciplined.", a: "Unknown" },
+  { q: "It's hard to beat a person who never gives up.", a: "Babe Ruth" },
+  { q: "How you do anything is how you do everything.", a: "Unknown" },
+  { q: "Focus on being productive instead of busy.", a: "Tim Ferriss" },
+  { q: "What seems impossible today will one day become your warm-up.", a: "Unknown" },
+  { q: "The body is a machine that responds to demand.", a: "Unknown" },
+  { q: "Strength is the product of struggle. You must do what others don't to achieve what others won't.", a: "Unknown" },
+  { q: "Chase the vision, not the person.", a: "Unknown" },
+  { q: "Effort only fully releases its reward after a person refuses to quit.", a: "Napoleon Hill" },
+  { q: "You don't find willpower. You create it, through practice.", a: "Unknown" },
+  { q: "The man who has confidence in himself gains the confidence of others.", a: "Hasidic Proverb" },
+  { q: "Steady effort, not occasional intensity, is what builds a life.", a: "Unknown" },
+  { q: "The best time to plant a tree was twenty years ago. The second best time is now.", a: "Chinese Proverb" },
+  { q: "You get in life what you have the courage to ask for.", a: "Oprah Winfrey" },
+  { q: "Where focus goes, energy flows.", a: "Tony Robbins" },
+  { q: "Fitness is not about being better than someone else. It's about being better than you used to be.", a: "Khloe Kardashian" },
+  { q: "The mind is the athlete. The body is simply the means it uses.", a: "Bryce Courtenay" },
+  { q: "Adversity causes some men to break, and others to break records.", a: "William Arthur Ward" },
+  { q: "Every workout counts, even the ones you don't feel like doing.", a: "Unknown" },
+  { q: "You are stronger than you think.", a: "Unknown" },
+  { q: "Give every task everything you've got, and results will take care of themselves.", a: "Denis Waitley" },
+  { q: "A goal without a plan is just a wish.", a: "Antoine de Saint-Exupéry" },
+  { q: "Sweat is just fat crying.", a: "Unknown" },
+  { q: "Success is often the result of taking a misstep in the right direction.", a: "Al Bernstein" },
+  { q: "Turn your can'ts into cans and your dreams into plans.", a: "Unknown" },
+  { q: "You don't get what you wish for. You get what you work for.", a: "Unknown" },
+  { q: "The only limit to our realization of tomorrow is our doubts of today.", a: "Franklin D. Roosevelt" },
+  { q: "Keep going. Everything you need will come to you at the perfect time.", a: "Unknown" },
+  { q: "One rep, one set, one session at a time.", a: "Unknown" },
+];
+
+function getDailyQuote() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now - start) / 86400000);
+  return QUOTES[dayOfYear % QUOTES.length];
+}
+
+/* SOUND — bright high-pitched metal-on-metal clink (like dumbbell plates touching) */
+function playClankSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+
+    const bufferSize = Math.floor(ctx.sampleRate * 0.012);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const master = ctx.createGain();
+    master.gain.value = 0.85;
+    master.connect(ctx.destination);
+
+    // bright, high, tightly-tuned resonances — inharmonic spacing so it clinks, not chimes musically
+    const partials = [
+      { freq: 1900, q: 30, decay: 0.28, level: 0.5 },
+      { freq: 2600, q: 34, decay: 0.24, level: 0.44 },
+      { freq: 3400, q: 36, decay: 0.2, level: 0.36 },
+      { freq: 4300, q: 38, decay: 0.16, level: 0.28 },
+      { freq: 5600, q: 32, decay: 0.12, level: 0.2 },
+      { freq: 7200, q: 28, decay: 0.08, level: 0.14 },
+    ];
+
+    partials.forEach((p) => {
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = p.freq;
+      bp.Q.value = p.q;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(p.level, now);
+      g.gain.exponentialRampToValueAtTime(0.0005, now + p.decay);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(master);
+      src.start(now);
+      src.stop(now + p.decay + 0.03);
+    });
+
+    // hairline sharp attack click to sharpen the transient
+    const clickSrc = ctx.createBufferSource();
+    clickSrc.buffer = buffer;
+    const clickFilter = ctx.createBiquadFilter();
+    clickFilter.type = "highpass";
+    clickFilter.frequency.value = 6000;
+    const clickGain = ctx.createGain();
+    clickGain.gain.setValueAtTime(0.4, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+    clickSrc.connect(clickFilter);
+    clickFilter.connect(clickGain);
+    clickGain.connect(master);
+    clickSrc.start(now);
+    clickSrc.stop(now + 0.02);
+  } catch (e) {
+    /* audio not available, fail silently */
+  }
+}
+
+/* SOUND — crowd cheer swell for finishing the whole workout */
+function playCheerSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const duration = 1.1;
+
+    // noise burst shaped into a rising/falling "roar"
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = "bandpass";
+    bandpass.frequency.value = 1400;
+    bandpass.Q.value = 0.6;
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.25);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+    noise.connect(bandpass);
+    bandpass.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+
+    // bright triumphant chord stab layered on top
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.05 + i * 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    });
+
+    noise.start();
+    noise.stop(ctx.currentTime + duration);
+  } catch (e) {
+    /* audio not available, fail silently */
+  }
+}
+
+/* SOUND — quick shuffle/swap sound for cycling exercise variants */
+function playShuffleSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const notes = [700, 950, 1250];
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.045;
+      const osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, t);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0005, t + 0.09);
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.1);
+    });
+  } catch (e) {
+    /* audio not available, fail silently */
+  }
+}
+
+
+/* STORAGE (plain localStorage since this runs standalone, not inside Claude) */
+function loadSessions() {
+  try {
+    const raw = localStorage.getItem("setlog_sessions");
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+function saveSessions(list) {
+  try {
+    localStorage.setItem("setlog_sessions", JSON.stringify(list));
+  } catch (e) {
+    console.error("save failed", e);
+  }
+}
+
+function makeDefaultSets(exercise) {
+  return Array.from({ length: exercise.sets }, () =>
+    exercise.type === "time"
+      ? { seconds: exercise.targetSeconds, weight: "" }
+      : { reps: exercise.targetReps, weight: "" }
+  );
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+/* PLATE PROGRESS BAR */
+function PlateProgress({ total, current }) {
+  return (
+    <div style={{ display: "flex", gap: 6, width: "100%" }}>
+      {Array.from({ length: total }).map((_, i) => (
+        <div key={i} style={{
+          height: 8, flex: 1, borderRadius: 3,
+          backgroundColor: i < current ? T.accent : i === current ? T.teal : T.line,
+          transition: "background-color 200ms",
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/* HOME VIEW */
+function Home({ onStart, onHistory, lastByDay, stats }) {
+  const quote = React.useMemo(() => getDailyQuote(), []);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
+      <div style={{ padding: "32px 20px 18px", position: "relative" }}>
+        <div style={{
+          fontSize: 30, fontWeight: 900, letterSpacing: 1, textTransform: "uppercase",
+          backgroundImage: "linear-gradient(115deg, #FF8C42 0%, #FF6A2B 45%, #C43E12 100%)",
+          WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent",
+          textShadow: "0 1px 0 rgba(0,0,0,0.4)",
+        }}>ELDFORGE</div>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", color: T.textFaint, marginTop: -2 }}>
+          Forged one session at a time
+        </div>
+        <div style={{ height: 2, width: 56, marginTop: 12, background: "linear-gradient(90deg, #FF6A2B, transparent)" }} />
+        <div style={{ fontSize: 20, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, marginTop: 14, color: T.text }}>Ready to train</div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {DAYS.map((d) => (
+          <button key={d.id} onClick={() => onStart(d.id)} style={{
+            position: "relative", textAlign: "left", borderRadius: 6, padding: 16, display: "flex",
+            alignItems: "center", justifyContent: "space-between",
+            backgroundColor: T.surface, border: `1px solid ${T.line}`,
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -3px 6px rgba(0,0,0,0.45)",
+          }}>
+            <span className="rivet" style={{ top: 6, left: 6 }} />
+            <span className="rivet" style={{ top: 6, right: 6 }} />
+            <span className="rivet" style={{ bottom: 6, left: 6 }} />
+            <span className="rivet" style={{ bottom: 6, right: 6 }} />
+            <div style={{ marginLeft: 6 }}>
+              <div style={{ fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.3, fontSize: 18, color: T.text }}>{d.label}</div>
+              <div style={{ fontSize: 12, marginTop: 2, color: T.textMute }}>{d.sub}</div>
+              {lastByDay[d.id] && (
+                <div style={{ fontSize: 12, marginTop: 6, color: T.textFaint }}>Last done {fmtDate(lastByDay[d.id])}</div>
+              )}
+            </div>
+            <div style={{
+              width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              backgroundImage: "linear-gradient(135deg, #FF8C42, #E85A1F)",
+              boxShadow: "0 0 14px rgba(255,106,43,0.4), inset 0 1px 1px rgba(255,255,255,0.3)",
+            }}>
+              <ChevronRight size={20} color={T.bg} strokeWidth={3} />
+            </div>
+          </button>
+        ))}
+
+        {stats.totalSessions > 0 && (
+          <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
+            <div style={{ flex: 1, borderRadius: 10, padding: 12, textAlign: "center", backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: T.accent }}>{stats.totalSessions}</div>
+              <div style={{ fontSize: 11, textTransform: "uppercase", color: T.textMute }}>Sessions logged</div>
+            </div>
+            <div style={{ flex: 1, borderRadius: 10, padding: 12, textAlign: "center", backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: T.accent }}>{stats.totalKg.toLocaleString()}</div>
+              <div style={{ fontSize: 11, textTransform: "uppercase", color: T.textMute }}>Total kg lifted</div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginTop: 8, padding: "8px 12px", textAlign: "center" }}>
+          <div style={{ fontSize: 14, lineHeight: 1.5, fontStyle: "italic", color: T.textMute }}>
+            "{quote.q}"
+          </div>
+          <div style={{ fontSize: 12, marginTop: 6, fontStyle: "italic", color: T.textFaint }}>— {quote.a}</div>
+        </div>
+      </div>
+
+      <button onClick={onHistory} style={{
+        margin: "0 20px 24px", borderRadius: 10, padding: "12px 0", display: "flex",
+        alignItems: "center", justifyContent: "center", gap: 8,
+        fontWeight: 700, textTransform: "uppercase", fontSize: 13, letterSpacing: 0.5,
+        backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.textMute,
+      }}>
+        <History size={16} />
+        History
+      </button>
+    </div>
+  );
+}
+
+/* SESSION VIEW */
+function Session({ dayId, onFinish, onExit }) {
+  const exercises = EX[dayId];
+  const [idx, setIdx] = useState(0);
+  const [log, setLog] = useState(() => exercises.map((ex) => makeDefaultSets(ex)));
+
+  const [wobble, setWobble] = useState(false);
+  const [variantSel, setVariantSel] = useState(() => exercises.map(() => 0));
+  const exercise = exercises[idx];
+  const sets = log[idx];
+
+  const variantsFor = (ex) => [{ id: ex.id, name: ex.name, videoId: ex.videoId }, ...(ex.alts || [])];
+  const variants = variantsFor(exercise);
+  const currentVariant = variants[variantSel[idx] % variants.length];
+
+  const swapExercise = () => {
+    if (variants.length < 2) return;
+    playShuffleSound();
+    setVariantSel((prev) => {
+      const copy = [...prev];
+      copy[idx] = (copy[idx] + 1) % variants.length;
+      return copy;
+    });
+  };
+
+  const updateSet = (setI, field, value) => {
+    setLog((prev) => {
+      const copy = prev.map((s) => s.map((row) => ({ ...row })));
+      copy[idx][setI][field] = value;
+      return copy;
+    });
+  };
+
+  const addSet = () => {
+    setLog((prev) => {
+      const copy = prev.map((s) => s.map((row) => ({ ...row })));
+      copy[idx].push(
+        exercise.type === "time"
+          ? { seconds: exercise.targetSeconds, weight: "" }
+          : { reps: exercise.targetReps, weight: "" }
+      );
+      return copy;
+    });
+  };
+
+  const removeSet = (setI) => {
+    setLog((prev) => {
+      const copy = prev.map((s) => s.map((row) => ({ ...row })));
+      if (copy[idx].length > 1) copy[idx].splice(setI, 1);
+      return copy;
+    });
+  };
+
+  const next = () => {
+    const isLast = idx >= exercises.length - 1;
+    if (isLast) playCheerSound();
+    else playClankSound();
+    setWobble(true);
+    setTimeout(() => setWobble(false), 400);
+    if (idx < exercises.length - 1) {
+      setIdx(idx + 1);
+    } else {
+      const performed = exercises.map((ex, i) => {
+        const v = variantsFor(ex);
+        return { ...ex, name: v[variantSel[i] % v.length].name };
+      });
+      onFinish(dayId, performed, log);
+    }
+  };
+  const prevExercise = () => { if (idx > 0) setIdx(idx - 1); };
+
+  return (
+    <div className={wobble ? "setlog-wobble" : ""} style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
+      <div style={{ padding: "24px 20px 12px", display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={onExit} style={{ background: "none", border: "none", padding: 0, display: "flex" }}>
+          <ArrowLeft size={20} color={T.textMute} />
+        </button>
+        <div style={{ flex: 1 }}><PlateProgress total={exercises.length} current={idx} /></div>
+      </div>
+
+      <div style={{ padding: "0 20px 8px" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: T.accent }}>
+          {DAYS.find((d) => d.id === dayId).label} · Exercise {idx + 1} of {exercises.length}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 2 }}>
+          <div style={{ fontSize: 20, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.3, color: T.text }}>
+            {currentVariant.name}
+          </div>
+          {variants.length > 1 && (
+            <button onClick={swapExercise} style={{
+              display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
+              padding: "6px 10px", borderRadius: 8, fontSize: 11, fontWeight: 700,
+              textTransform: "uppercase", letterSpacing: 0.5,
+              backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.textMute,
+            }}>
+              <Shuffle size={13} />
+              Swap
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ margin: "0 20px", borderRadius: 10, overflow: "hidden", backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
+        <div style={{ position: "relative", paddingTop: "56.25%" }}>
+          <iframe
+            key={currentVariant.id}
+            src={`https://www.youtube.com/embed/${currentVariant.videoId}?rel=0&modestbranding=1`}
+            title={currentVariant.name}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+          />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px", marginTop: 12 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, color: T.textMute }}>
+          Target: {exercise.sets} sets × {exercise.type === "time" ? `${exercise.targetSeconds}s` : exercise.targetReps}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {sets.map((row, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, borderRadius: 10, padding: 10, backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
+              <div style={{ width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, flexShrink: 0, backgroundColor: T.surfaceRaised, color: T.textMute }}>
+                {i + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 11, display: "block", marginBottom: 2, color: T.textFaint }}>
+                  {exercise.type === "time" ? "Seconds" : "Reps"}
+                </label>
+                <input
+                  type="text" inputMode="numeric"
+                  value={exercise.type === "time" ? row.seconds : row.reps}
+                  onChange={(e) => updateSet(i, exercise.type === "time" ? "seconds" : "reps", e.target.value)}
+                  style={{ width: "100%", background: "transparent", border: "none", fontSize: 14, fontWeight: 700, color: T.text }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 11, display: "block", marginBottom: 2, color: T.textFaint }}>Weight (kg)</label>
+                <input
+                  type="text" inputMode="decimal" placeholder="0"
+                  value={row.weight}
+                  onChange={(e) => updateSet(i, "weight", e.target.value)}
+                  style={{ width: "100%", background: "transparent", border: "none", fontSize: 14, fontWeight: 700, color: T.text }}
+                />
+              </div>
+              <button onClick={() => removeSet(i)} style={{ background: "none", border: "none", padding: 4, flexShrink: 0, display: "flex" }}>
+                <Trash2 size={15} color={T.textFaint} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <button onClick={addSet} style={{
+          marginTop: 8, marginBottom: 16, width: "100%", padding: "8px 0", borderRadius: 10,
+          fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
+          background: "none", border: `1px dashed ${T.line}`, color: T.textMute,
+        }}>
+          + Add set
+        </button>
+      </div>
+
+      <div style={{ padding: "8px 20px 24px", display: "flex", gap: 8, backgroundColor: "transparent" }}>
+        {idx > 0 && (
+          <button onClick={prevExercise} style={{
+            borderRadius: 10, padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "center",
+            backgroundColor: T.surface, border: `1px solid ${T.line}`,
+          }}>
+            <ChevronLeft size={20} color={T.textMute} />
+          </button>
+        )}
+        <button onClick={next} style={{
+          flex: 1, borderRadius: 8, padding: "16px 0",
+          fontWeight: 900, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 16,
+          backgroundImage: "linear-gradient(135deg, #FF8C42, #E85A1F)",
+          boxShadow: "0 0 18px rgba(255,106,43,0.35), inset 0 1px 1px rgba(255,255,255,0.25)",
+          color: T.bg, border: "none",
+        }}>
+          {idx < exercises.length - 1 ? "Next Exercise" : "Finish Workout"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* SUMMARY VIEW */
+function Summary({ session, onDone }) {
+  const totalSets = session.exercises.reduce((a, ex) => a + ex.sets.length, 0);
+  const totalVolume = session.exercises.reduce((a, ex) => a + ex.sets.reduce((b, s) => {
+    const w = parseFloat(s.weight) || 0;
+    const r = parseFloat(s.reps) || 0;
+    return b + w * r;
+  }, 0), 0);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
+      <div style={{ padding: "40px 20px 24px", textAlign: "center" }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: T.accent }}>
+          <Check size={26} color={T.bg} strokeWidth={3} />
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.3, color: T.text }}>Session Logged</div>
+        <div style={{ fontSize: 14, marginTop: 4, color: T.textMute }}>
+          {DAYS.find((d) => d.id === session.day).label} · {fmtDate(session.date)}
+        </div>
+      </div>
+
+      <div style={{ padding: "0 20px", display: "flex", gap: 12, marginBottom: 20 }}>
+        {[["Exercises", session.exercises.length], ["Sets", totalSets], ["Kg volume", Math.round(totalVolume)]].map(([label, val]) => (
+          <div key={label} style={{ flex: 1, borderRadius: 10, padding: 12, textAlign: "center", backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
+            <div style={{ fontSize: 20, fontWeight: 900, color: T.accent }}>{val}</div>
+            <div style={{ fontSize: 11, textTransform: "uppercase", color: T.textMute }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px" }}>
+        {session.exercises.map((ex, i) => (
+          <div key={i} style={{ marginBottom: 12, borderRadius: 10, padding: 12, backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: T.text }}>{ex.name}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {ex.sets.map((s, j) => (
+                <div key={j} style={{ fontSize: 12, padding: "4px 8px", borderRadius: 6, backgroundColor: T.surfaceRaised, color: T.textMute }}>
+                  {ex.type === "time" ? `${s.seconds || 0}s` : `${s.reps || 0} reps`}{s.weight ? ` · ${s.weight}kg` : ""}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ padding: "12px 20px 24px" }}>
+        <button onClick={onDone} style={{
+          width: "100%", borderRadius: 8, padding: "16px 0",
+          fontWeight: 900, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 16,
+          backgroundImage: "linear-gradient(135deg, #FF8C42, #E85A1F)",
+          boxShadow: "0 0 18px rgba(255,106,43,0.35), inset 0 1px 1px rgba(255,255,255,0.25)",
+          color: T.bg, border: "none",
+        }}>
+          Done
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* HISTORY VIEW */
+function HistoryView({ sessions, onBack, onClear }) {
+  const [openId, setOpenId] = useState(null);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
+      <div style={{ padding: "32px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", padding: 0, display: "flex" }}>
+          <ArrowLeft size={20} color={T.textMute} />
+        </button>
+        <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, color: T.text }}>History</div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
+        {sessions.length === 0 && (
+          <div style={{ textAlign: "center", marginTop: 64, color: T.textFaint }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><Dumbbell size={32} /></div>
+            <div style={{ fontSize: 14 }}>No sessions logged yet.</div>
+            <div style={{ fontSize: 14 }}>Finish a workout to see it here.</div>
+          </div>
+        )}
+        {sessions.slice().reverse().map((s) => (
+          <button key={s.id} onClick={() => setOpenId(openId === s.id ? null : s.id)} style={{
+            width: "100%", textAlign: "left", marginBottom: 10, borderRadius: 10, padding: 14,
+            backgroundColor: T.surface, border: `1px solid ${T.line}`,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: 14, color: T.accent }}>
+                  {(DAYS.find((d) => d.id === s.day) || {}).label || s.day}
+                </div>
+                <div style={{ fontSize: 12, marginTop: 2, color: T.textMute }}>{fmtDate(s.date)} · {s.exercises.length} exercises</div>
+              </div>
+              <ChevronRight size={16} color={T.textFaint} style={{ transform: openId === s.id ? "rotate(90deg)" : "none" }} />
+            </div>
+            {openId === s.id && (
+              <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                {s.exercises.map((ex, i) => (
+                  <div key={i} style={{ borderRadius: 6, padding: 8, backgroundColor: T.surfaceRaised }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4, color: T.text }}>{ex.name}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {ex.sets.map((row, j) => (
+                        <span key={j} style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, backgroundColor: T.bg, color: T.textMute }}>
+                          {ex.type === "time" ? `${row.seconds || 0}s` : `${row.reps || 0}`}{row.weight ? ` · ${row.weight}kg` : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {sessions.length > 0 && (
+        <div style={{ padding: "0 20px 24px" }}>
+          <button onClick={onClear} style={{
+            width: "100%", padding: "10px 0", borderRadius: 10, fontSize: 12, fontWeight: 700,
+            textTransform: "uppercase", letterSpacing: 0.5, display: "flex", alignItems: "center",
+            justifyContent: "center", gap: 8, background: "none", border: `1px solid ${T.line}`, color: T.textFaint,
+          }}>
+            <Trash2 size={14} />
+            Clear all history
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ROOT APP */
+function App() {
+  const [view, setView] = useState("home");
+  const [activeDay, setActiveDay] = useState(null);
+  const [sessions, setSessions] = useState(() => loadSessions());
+  const [lastSession, setLastSession] = useState(null);
+
+  const lastByDay = {};
+  let totalKg = 0;
+  sessions.forEach((s) => {
+    if (!lastByDay[s.day] || new Date(s.date) > new Date(lastByDay[s.day])) lastByDay[s.day] = s.date;
+    s.exercises.forEach((ex) => {
+      ex.sets.forEach((row) => {
+        const w = parseFloat(row.weight) || 0;
+        const r = parseFloat(row.reps) || 0;
+        totalKg += w * r;
+      });
+    });
+  });
+  const stats = { totalSessions: sessions.length, totalKg: Math.round(totalKg) };
+
+  const handleFinish = (dayId, exercises, log) => {
+    const record = {
+      id: Date.now().toString(),
+      day: dayId,
+      date: new Date().toISOString(),
+      exercises: exercises.map((ex, i) => ({ name: ex.name, type: ex.type, sets: log[i] })),
+    };
+    const updated = [...sessions, record];
+    setSessions(updated);
+    saveSessions(updated);
+    setLastSession(record);
+    setView("summary");
+  };
+
+  const handleClear = () => {
+    setSessions([]);
+    saveSessions([]);
+  };
+
+  return (
+    <div style={{ position: "relative", width: "100%", maxWidth: 480, margin: "0 auto", height: "100vh", overflow: "hidden" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent", position: "relative" }}>
+        {view === "home" && (
+          <Home onStart={(dayId) => { setActiveDay(dayId); setView("session"); }} onHistory={() => setView("history")} lastByDay={lastByDay} stats={stats} />
+        )}
+        {view === "session" && (
+          <Session dayId={activeDay} onFinish={handleFinish} onExit={() => setView("home")} />
+        )}
+        {view === "summary" && lastSession && (
+          <Summary session={lastSession} onDone={() => setView("home")} />
+        )}
+        {view === "history" && (
+          <HistoryView sessions={sessions} onBack={() => setView("home")} onClear={handleClear} />
+        )}
+      </div>
+      <div className="eldforge-grain" />
+      <div className="eldforge-vignette" />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
