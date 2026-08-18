@@ -403,6 +403,52 @@ function playShuffleSound() {
 }
 
 
+/* SOUND — firm mechanical "lock-in" thunk for picking a workout on the home screen */
+function playSelectSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+
+    // low thud, like a lever engaging
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.5, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+
+    // short metallic ring on top, lower register than the set-complete clank
+    const bufferSize = Math.floor(ctx.sampleRate * 0.02);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    [900, 1400, 2100].forEach((freq, i) => {
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = freq;
+      bp.Q.value = 22;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.22 - i * 0.05, now);
+      g.gain.exponentialRampToValueAtTime(0.0005, now + 0.16);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(ctx.destination);
+      src.start(now);
+      src.stop(now + 0.18);
+    });
+  } catch (e) {
+    /* audio not available, fail silently */
+  }
+}
+
 /* STORAGE (plain localStorage since this runs standalone, not inside Claude) */
 function loadSessions() {
   try {
@@ -469,7 +515,7 @@ function Home({ onStart, onHistory, lastByDay, stats }) {
 
       <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
         {DAYS.map((d) => (
-          <button key={d.id} onClick={() => onStart(d.id)} style={{
+          <button key={d.id} onClick={() => { playSelectSound(); onStart(d.id); }} style={{
             position: "relative", textAlign: "left", borderRadius: 6, padding: 16, display: "flex",
             alignItems: "center", justifyContent: "space-between",
             backgroundColor: T.surface, border: `1px solid ${T.line}`,
