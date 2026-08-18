@@ -265,10 +265,24 @@ function getDailyQuote() {
   return QUOTES[dayOfYear % QUOTES.length];
 }
 
+/* SOUND — one shared AudioContext for the whole app. Browsers cap how many
+   contexts can exist at once, so creating a new one per sound effect
+   eventually starts silently failing after enough button presses. */
+let _audioCtx = null;
+function getAudioContext() {
+  if (!_audioCtx) {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (_audioCtx.state === "suspended") {
+    _audioCtx.resume();
+  }
+  return _audioCtx;
+}
+
 /* SOUND — bright high-pitched metal-on-metal clink (like dumbbell plates touching) */
 function playClankSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioContext();
     const now = ctx.currentTime;
 
     const bufferSize = Math.floor(ctx.sampleRate * 0.012);
@@ -329,7 +343,7 @@ function playClankSound() {
 /* SOUND — crowd cheer swell for finishing the whole workout */
 function playCheerSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioContext();
     const duration = 1.1;
 
     // noise burst shaped into a rising/falling "roar"
@@ -380,7 +394,7 @@ function playCheerSound() {
 /* SOUND — quick shuffle/swap sound for cycling exercise variants */
 function playShuffleSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioContext();
     const now = ctx.currentTime;
     const notes = [700, 950, 1250];
     notes.forEach((freq, i) => {
@@ -406,7 +420,7 @@ function playShuffleSound() {
 /* SOUND — firm mechanical "lock-in" thunk for picking a workout on the home screen */
 function playSelectSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioContext();
     const now = ctx.currentTime;
 
     // low thud, like a lever engaging
