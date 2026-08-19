@@ -83,6 +83,12 @@ const History = (p) => <Icon {...p}><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0
 const Dumbbell = (p) => <Icon {...p}><path d="M6.5 6.5 17.5 17.5" /><path d="M2.5 2.5 6.5 6.5" /><path d="M17.5 17.5 21.5 21.5" /><rect x="3.5" y="3.5" width="6" height="6" rx="1" transform="rotate(-45 6.5 6.5)"/><rect x="14.5" y="14.5" width="6" height="6" rx="1" transform="rotate(-45 17.5 17.5)"/></Icon>;
 const Trash2 = (p) => <Icon {...p}><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></Icon>;
 const Shuffle = (p) => <Icon {...p}><polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /><line x1="4" y1="4" x2="9" y2="9" /></Icon>;
+const Settings = (p) => <Icon {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></Icon>;
+const TimerIcon = (p) => <Icon {...p}><line x1="10" y1="2" x2="14" y2="2" /><line x1="12" y1="14" x2="12" y2="8" /><circle cx="12" cy="14" r="8" /></Icon>;
+const CalcIcon = (p) => <Icon {...p}><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><line x1="8" y1="6" x2="16" y2="6" /><line x1="16" y1="14" x2="16" y2="18" /><path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M12 14h.01" /><path d="M8 14h.01" /><path d="M12 18h.01" /><path d="M8 18h.01" /></Icon>;
+const PlayIcon = (p) => <Icon {...p}><polygon points="5 3 19 12 5 21 5 3" /></Icon>;
+const PlusIcon = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></Icon>;
+const XIcon = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>;
 
 /* EXERCISE DATA */
 const DAYS = [
@@ -94,64 +100,87 @@ const DAYS = [
 
 const EX = {
   push: [
-    { id: "shoulder-press", name: "Standing Shoulder Press", type: "reps", sets: 4, targetReps: "8-12", videoId: "eYHPM-wWYKs", alts: [
-      { id: "arnold-press", name: "Arnold Press", videoId: "ris9tKqMwgU" },
-      { id: "single-arm-press", name: "Single-Arm Shoulder Press", videoId: "JyJJLEnCcUo" },
+    { id: "shoulder-press", name: "Standing Shoulder Press", type: "reps", sets: 4, targetReps: "8-12", videoId: "eYHPM-wWYKs", equipment: "dumbbells", alts: [
+      { id: "arnold-press", name: "Arnold Press", videoId: "ris9tKqMwgU", equipment: "dumbbells" },
+      { id: "single-arm-press", name: "Single-Arm Shoulder Press", videoId: "JyJJLEnCcUo", equipment: "dumbbells" },
     ] },
-    { id: "chest-squeeze", name: "Standing Chest Squeeze Press", type: "reps", sets: 3, targetReps: "10-12", videoId: "OjJ0So34qtE", alts: [
-      { id: "floor-press", name: "Dumbbell Floor Press", videoId: "qHCI9rK7HqM" },
+    { id: "chest-squeeze", name: "Standing Chest Squeeze Press", type: "reps", sets: 3, targetReps: "10-12", videoId: "OjJ0So34qtE", equipment: "dumbbells", alts: [
+      { id: "floor-press", name: "Dumbbell Floor Press", videoId: "qHCI9rK7HqM", equipment: "dumbbells" },
     ] },
-    { id: "tricep-ext", name: "Seated Overhead Tricep Extension", type: "reps", sets: 3, targetReps: "12", videoId: "dxdr8iSRLA8", alts: [
-      { id: "standing-tricep-ext", name: "Standing Overhead Tricep Extension", videoId: "6I8v2frZTIg" },
-      { id: "tricep-kickback", name: "Tricep Kickback", videoId: "Cw2qX47wRY0" },
+    { id: "tricep-ext", name: "Seated Overhead Tricep Extension", type: "reps", sets: 3, targetReps: "12", videoId: "dxdr8iSRLA8", equipment: "dumbbells", alts: [
+      { id: "standing-tricep-ext", name: "Standing Overhead Tricep Extension", videoId: "6I8v2frZTIg", equipment: "dumbbells" },
+      { id: "tricep-kickback", name: "Tricep Kickback", videoId: "Cw2qX47wRY0", equipment: "dumbbells" },
     ] },
-    { id: "pushups", name: "Push-Ups", type: "reps", sets: 3, targetReps: "max", videoId: "WDIpL0pjun0", alts: [
-      { id: "diamond-pushups", name: "Diamond Push-Ups", videoId: "_4EGPVJuqfA" },
+    { id: "pushups", name: "Push-Ups", type: "reps", sets: 3, targetReps: "max", videoId: "WDIpL0pjun0", equipment: "bodyweight", alts: [
+      { id: "diamond-pushups", name: "Diamond Push-Ups", videoId: "_4EGPVJuqfA", equipment: "bodyweight" },
     ] },
   ],
   pull: [
-    { id: "rows", name: "Bent-Over Dumbbell Rows", type: "reps", sets: 4, targetReps: "10-12", videoId: "c-gt-zzoa_A", alts: [
-      { id: "single-arm-row", name: "Single-Arm Dumbbell Row", videoId: "gfUg6qWohTk" },
+    { id: "rows", name: "Bent-Over Dumbbell Rows", type: "reps", sets: 4, targetReps: "10-12", videoId: "c-gt-zzoa_A", equipment: "dumbbells", alts: [
+      { id: "single-arm-row", name: "Single-Arm Dumbbell Row", videoId: "gfUg6qWohTk", equipment: "dumbbells" },
     ] },
-    { id: "curls", name: "Standing Bicep Curls", type: "reps", sets: 3, targetReps: "12", videoId: "ykJmrZ5v0Oo", alts: [
-      { id: "hammer-curls", name: "Hammer Curls", videoId: "4BRAf2BajWw" },
+    { id: "curls", name: "Standing Bicep Curls", type: "reps", sets: 3, targetReps: "12", videoId: "ykJmrZ5v0Oo", equipment: "dumbbells", alts: [
+      { id: "hammer-curls", name: "Hammer Curls", videoId: "4BRAf2BajWw", equipment: "dumbbells" },
     ] },
-    { id: "rear-delt", name: "Seated Rear Delt Flyes", type: "reps", sets: 3, targetReps: "12", videoId: "KoRDmXocJII", alts: [
-      { id: "standing-rear-delt", name: "Standing Bent-Over Rear Delt Fly", videoId: "yqvsu1YAi0Q" },
+    { id: "rear-delt", name: "Seated Rear Delt Flyes", type: "reps", sets: 3, targetReps: "12", videoId: "KoRDmXocJII", equipment: "dumbbells", alts: [
+      { id: "standing-rear-delt", name: "Standing Bent-Over Rear Delt Fly", videoId: "yqvsu1YAi0Q", equipment: "dumbbells" },
     ] },
-    { id: "reverse-plank", name: "Reverse Plank Hold", type: "time", sets: 3, targetSeconds: 30, videoId: "uUEKLhpJd1Q", alts: [
-      { id: "superman-hold", name: "Superman Hold", videoId: "LZoWdePF1NQ" },
+    { id: "reverse-plank", name: "Reverse Plank Hold", type: "time", sets: 3, targetSeconds: 30, videoId: "uUEKLhpJd1Q", equipment: "bodyweight", alts: [
+      { id: "superman-hold", name: "Superman Hold", videoId: "LZoWdePF1NQ", equipment: "bodyweight" },
     ] },
   ],
   legs: [
-    { id: "goblet-squat", name: "Goblet Squats", type: "reps", sets: 4, targetReps: "10-12", videoId: "gCESNsDsbqk", alts: [
-      { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", videoId: "TEN65PjaP0Q" },
+    { id: "goblet-squat", name: "Goblet Squats", type: "reps", sets: 4, targetReps: "10-12", videoId: "gCESNsDsbqk", equipment: "dumbbells", alts: [
+      { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", videoId: "TEN65PjaP0Q", equipment: "dumbbells" },
     ] },
-    { id: "reverse-lunge", name: "Reverse Lunges", type: "reps", sets: 3, targetReps: "10 / leg", videoId: "Q2k3kYbtOcI", alts: [
-      { id: "walking-lunges", name: "Walking Lunges", videoId: "_qSuiZ62vqI" },
+    { id: "reverse-lunge", name: "Reverse Lunges", type: "reps", sets: 3, targetReps: "10 / leg", videoId: "Q2k3kYbtOcI", equipment: "bodyweight", alts: [
+      { id: "walking-lunges", name: "Walking Lunges", videoId: "_qSuiZ62vqI", equipment: "bodyweight" },
     ] },
-    { id: "step-ups", name: "Step-Ups", type: "reps", sets: 3, targetReps: "10 / leg", videoId: "DxUNi119Qzs", alts: [
-      { id: "lateral-step-up", name: "Lateral Step-Up", videoId: "Pk7ngkIQ6n0" },
+    { id: "step-ups", name: "Step-Ups", type: "reps", sets: 3, targetReps: "10 / leg", videoId: "DxUNi119Qzs", equipment: "bodyweight", alts: [
+      { id: "lateral-step-up", name: "Lateral Step-Up", videoId: "Pk7ngkIQ6n0", equipment: "bodyweight" },
     ] },
-    { id: "calf-raise", name: "Standing Calf Raises", type: "reps", sets: 3, targetReps: "15", videoId: "wxwY7GXxL4k", alts: [
-      { id: "single-leg-calf-raise", name: "Single-Leg Calf Raise", videoId: "u1Yc75YdiJA" },
+    { id: "calf-raise", name: "Standing Calf Raises", type: "reps", sets: 3, targetReps: "15", videoId: "wxwY7GXxL4k", equipment: "bodyweight", alts: [
+      { id: "single-leg-calf-raise", name: "Single-Leg Calf Raise", videoId: "u1Yc75YdiJA", equipment: "bodyweight" },
     ] },
   ],
   full: [
-    { id: "thrusters", name: "Dumbbell Thrusters", type: "reps", sets: 3, targetReps: "10", videoId: "eDNt3biU9I4", alts: [
-      { id: "squat-to-press", name: "Squat to Press", videoId: "ffmPh_FsU8A" },
+    { id: "thrusters", name: "Dumbbell Thrusters", type: "reps", sets: 3, targetReps: "10", videoId: "eDNt3biU9I4", equipment: "dumbbells", alts: [
+      { id: "squat-to-press", name: "Squat to Press", videoId: "ffmPh_FsU8A", equipment: "dumbbells" },
     ] },
-    { id: "renegade-row", name: "Renegade Rows", type: "reps", sets: 3, targetReps: "8 / side", videoId: "wTqlJ0aoJlM", alts: [
-      { id: "bear-crawl", name: "Bear Crawl Hold", videoId: "lRolga8vTyc" },
+    { id: "renegade-row", name: "Renegade Rows", type: "reps", sets: 3, targetReps: "8 / side", videoId: "wTqlJ0aoJlM", equipment: "dumbbells", alts: [
+      { id: "bear-crawl", name: "Bear Crawl Hold", videoId: "lRolga8vTyc", equipment: "bodyweight" },
     ] },
-    { id: "plank", name: "Plank", type: "time", sets: 3, targetSeconds: 40, videoId: "mwlp75MS6Rg", alts: [
-      { id: "side-plank", name: "Side Plank", videoId: "0M-erHBl48U" },
+    { id: "plank", name: "Plank", type: "time", sets: 3, targetSeconds: 40, videoId: "mwlp75MS6Rg", equipment: "bodyweight", alts: [
+      { id: "side-plank", name: "Side Plank", videoId: "0M-erHBl48U", equipment: "bodyweight" },
     ] },
-    { id: "mountain-climbers", name: "Mountain Climbers", type: "reps", sets: 3, targetReps: "20", videoId: "hq_0YlyfqGM", alts: [
-      { id: "bicycle-crunches", name: "Bicycle Crunches", videoId: "z2GXKmhXYl8" },
+    { id: "mountain-climbers", name: "Mountain Climbers", type: "reps", sets: 3, targetReps: "20", videoId: "hq_0YlyfqGM", equipment: "bodyweight", alts: [
+      { id: "bicycle-crunches", name: "Bicycle Crunches", videoId: "z2GXKmhXYl8", equipment: "bodyweight" },
     ] },
   ],
 };
+
+/* EQUIPMENT — user-selectable gear. "bodyweight"-tagged exercises are always
+   included regardless of selection; everything else requires a match. */
+const EQUIPMENT_OPTIONS = [
+  { id: "dumbbells", label: "Dumbbells", note: "Powers most of the exercise pool." },
+  { id: "barbell", label: "Barbell", note: "Unlocks the plate calculator." },
+];
+
+function buildDayExercises(dayId, equipment) {
+  const owned = new Set(equipment || []);
+  const allowed = (v) => !v.equipment || v.equipment === "bodyweight" || owned.has(v.equipment);
+  return EX[dayId]
+    .map((ex) => {
+      const variants = [
+        { id: ex.id, name: ex.name, videoId: ex.videoId, equipment: ex.equipment },
+        ...(ex.alts || []),
+      ].filter(allowed);
+      if (variants.length === 0) return null;
+      const [primary, ...alts] = variants;
+      return { ...ex, id: primary.id, name: primary.name, videoId: primary.videoId, alts };
+    })
+    .filter(Boolean);
+}
 
 /* DAILY QUOTES — consistency & mindset, one shown per day, cycles through the year */
 const QUOTES = [
@@ -391,25 +420,37 @@ function playCheerSound() {
   }
 }
 
-/* SOUND — quick shuffle/swap sound for cycling exercise variants */
+/* SOUND — neutral mechanical click for cycling exercise variants (deliberately
+   flat/toneless — a card-flip snap, not a chime — so it doesn't read as a
+   success or achievement cue like the clank/cheer sounds do) */
 function playShuffleSound() {
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
-    const notes = [700, 950, 1250];
-    notes.forEach((freq, i) => {
-      const t = now + i * 0.045;
-      const osc = ctx.createOscillator();
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, t);
+
+    const bufferSize = Math.floor(ctx.sampleRate * 0.02);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    // two quick broadband taps — no pitch, no sustained ring
+    [0, 0.055].forEach((offset, i) => {
+      const t = now + offset;
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 2200 - i * 500;
+      bp.Q.value = 3;
       const g = ctx.createGain();
       g.gain.setValueAtTime(0.001, t);
-      g.gain.exponentialRampToValueAtTime(0.16, t + 0.008);
-      g.gain.exponentialRampToValueAtTime(0.0005, t + 0.09);
-      osc.connect(g);
+      g.gain.exponentialRampToValueAtTime(0.2, t + 0.003);
+      g.gain.exponentialRampToValueAtTime(0.0005, t + 0.045);
+      src.connect(bp);
+      bp.connect(g);
       g.connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.1);
+      src.start(t);
+      src.stop(t + 0.05);
     });
   } catch (e) {
     /* audio not available, fail silently */
@@ -463,6 +504,30 @@ function playSelectSound() {
   }
 }
 
+/* SOUND — gentle two-note bell for the rest timer finishing */
+function playTimerDoneSound() {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    [880, 1046.5].forEach((freq, i) => {
+      const t = now + i * 0.16;
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0005, t + 0.32);
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.34);
+    });
+  } catch (e) {
+    /* audio not available, fail silently */
+  }
+}
+
 /* STORAGE (plain localStorage since this runs standalone, not inside Claude) */
 function loadSessions() {
   try {
@@ -475,6 +540,37 @@ function loadSessions() {
 function saveSessions(list) {
   try {
     localStorage.setItem("setlog_sessions", JSON.stringify(list));
+  } catch (e) {
+    console.error("save failed", e);
+  }
+}
+
+function loadUsername() {
+  try {
+    return localStorage.getItem("setlog_username") || "";
+  } catch (e) {
+    return "";
+  }
+}
+function saveUsername(name) {
+  try {
+    localStorage.setItem("setlog_username", name);
+  } catch (e) {
+    console.error("save failed", e);
+  }
+}
+
+function loadEquipment() {
+  try {
+    const raw = localStorage.getItem("setlog_equipment");
+    return raw ? JSON.parse(raw) : ["dumbbells"];
+  } catch (e) {
+    return ["dumbbells"];
+  }
+}
+function saveEquipment(list) {
+  try {
+    localStorage.setItem("setlog_equipment", JSON.stringify(list));
   } catch (e) {
     console.error("save failed", e);
   }
@@ -509,11 +605,17 @@ function PlateProgress({ total, current }) {
 }
 
 /* HOME VIEW */
-function Home({ onStart, onHistory, lastByDay, stats }) {
+function Home({ onStart, onHistory, onSettings, onPlates, lastByDay, stats, name, equipment }) {
   const quote = React.useMemo(() => getDailyQuote(), []);
+  const showPlates = equipment.includes("barbell");
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
       <div style={{ padding: "32px 20px 18px", position: "relative" }}>
+        <button onClick={onSettings} style={{
+          position: "absolute", top: 30, right: 20, background: "none", border: "none", padding: 6, display: "flex",
+        }}>
+          <Settings size={20} color={T.textMute} />
+        </button>
         <div style={{
           fontSize: 30, fontWeight: 900, letterSpacing: 1, textTransform: "uppercase",
           backgroundImage: "linear-gradient(115deg, #FF8C42 0%, #FF6A2B 45%, #C43E12 100%)",
@@ -524,7 +626,10 @@ function Home({ onStart, onHistory, lastByDay, stats }) {
           Forged one session at a time
         </div>
         <div style={{ height: 2, width: 56, marginTop: 12, background: "linear-gradient(90deg, #FF6A2B, transparent)" }} />
-        <div style={{ fontSize: 20, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, marginTop: 14, color: T.text }}>Ready to train</div>
+        {name && (
+          <div style={{ fontSize: 12, marginTop: 14, color: T.textFaint }}>Welcome back, {name}</div>
+        )}
+        <div style={{ fontSize: 20, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, marginTop: name ? 4 : 14, color: T.text }}>Ready to train?</div>
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -577,22 +682,34 @@ function Home({ onStart, onHistory, lastByDay, stats }) {
         </div>
       </div>
 
-      <button onClick={onHistory} style={{
-        margin: "0 20px 24px", borderRadius: 10, padding: "12px 0", display: "flex",
-        alignItems: "center", justifyContent: "center", gap: 8,
-        fontWeight: 700, textTransform: "uppercase", fontSize: 13, letterSpacing: 0.5,
-        backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.textMute,
-      }}>
-        <History size={16} />
-        History
-      </button>
+      <div style={{ margin: "0 20px 24px", display: "flex", gap: 10 }}>
+        <button onClick={onHistory} style={{
+          flex: 1, borderRadius: 10, padding: "12px 0", display: "flex",
+          alignItems: "center", justifyContent: "center", gap: 8,
+          fontWeight: 700, textTransform: "uppercase", fontSize: 13, letterSpacing: 0.5,
+          backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.textMute,
+        }}>
+          <History size={16} />
+          History
+        </button>
+        {showPlates && (
+          <button onClick={onPlates} style={{
+            flex: 1, borderRadius: 10, padding: "12px 0", display: "flex",
+            alignItems: "center", justifyContent: "center", gap: 8,
+            fontWeight: 700, textTransform: "uppercase", fontSize: 13, letterSpacing: 0.5,
+            backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.textMute,
+          }}>
+            <CalcIcon size={16} />
+            Plates
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
 /* SESSION VIEW */
-function Session({ dayId, onFinish, onExit }) {
-  const exercises = EX[dayId];
+function Session({ dayId, exercises, onFinish, onExit }) {
   const [idx, setIdx] = useState(0);
   const [log, setLog] = useState(() => exercises.map((ex) => makeDefaultSets(ex)));
 
@@ -742,12 +859,14 @@ function Session({ dayId, onFinish, onExit }) {
           ))}
         </div>
         <button onClick={addSet} style={{
-          marginTop: 8, marginBottom: 16, width: "100%", padding: "8px 0", borderRadius: 10,
+          marginTop: 8, width: "100%", padding: "8px 0", borderRadius: 10,
           fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
           background: "none", border: `1px dashed ${T.line}`, color: T.textMute,
         }}>
           + Add set
         </button>
+
+        <RestTimer key={idx} />
       </div>
 
       <div style={{ padding: "8px 20px 24px", display: "flex", gap: 8, backgroundColor: "transparent" }}>
@@ -904,10 +1023,301 @@ function HistoryView({ sessions, onBack, onClear }) {
   );
 }
 
+/* ONBOARDING — name prompt, shown only for brand-new users */
+function NamePrompt({ onSubmit }) {
+  const [name, setName] = useState("");
+  const trimmed = name.trim();
+  const submit = () => {
+    if (!trimmed) return;
+    onSubmit(trimmed);
+  };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "48px 24px", justifyContent: "center" }}>
+      <div style={{
+        fontSize: 26, fontWeight: 900, letterSpacing: 1, textTransform: "uppercase", textAlign: "center",
+        backgroundImage: "linear-gradient(115deg, #FF8C42 0%, #FF6A2B 45%, #C43E12 100%)",
+        WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent",
+      }}>Welcome to Eldforge</div>
+      <div style={{ fontSize: 14, textAlign: "center", marginTop: 10, color: T.textMute }}>What should we call you?</div>
+      <input
+        autoFocus
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
+        placeholder="Your name"
+        style={{
+          marginTop: 28, padding: "14px 16px", borderRadius: 10, fontSize: 16, fontWeight: 700, textAlign: "center",
+          backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.text,
+        }}
+      />
+      <button onClick={submit} disabled={!trimmed} style={{
+        marginTop: 16, borderRadius: 8, padding: "16px 0",
+        fontWeight: 900, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 15,
+        backgroundImage: trimmed ? "linear-gradient(135deg, #FF8C42, #E85A1F)" : "none",
+        backgroundColor: trimmed ? "transparent" : T.surface,
+        boxShadow: trimmed ? "0 0 18px rgba(255,106,43,0.35), inset 0 1px 1px rgba(255,255,255,0.25)" : "none",
+        color: trimmed ? T.bg : T.textFaint, border: trimmed ? "none" : `1px solid ${T.line}`,
+        opacity: trimmed ? 1 : 0.6,
+      }}>
+        Continue
+      </button>
+    </div>
+  );
+}
+
+/* EQUIPMENT PICKER — shared by onboarding and Settings */
+function EquipmentPicker({ selected, onToggle }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {EQUIPMENT_OPTIONS.map((opt) => {
+        const active = selected.includes(opt.id);
+        return (
+          <button key={opt.id} onClick={() => onToggle(opt.id)} style={{
+            textAlign: "left", borderRadius: 10, padding: 14, display: "flex", alignItems: "center", justifyContent: "space-between",
+            backgroundColor: active ? "rgba(255,106,43,0.1)" : T.surface,
+            border: `1px solid ${active ? T.accent : T.line}`,
+          }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: T.text }}>{opt.label}</div>
+              <div style={{ fontSize: 12, marginTop: 2, color: T.textMute }}>{opt.note}</div>
+            </div>
+            <div style={{
+              width: 24, height: 24, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              backgroundColor: active ? T.accent : "transparent", border: `1px solid ${active ? T.accent : T.line}`,
+            }}>
+              {active && <Check size={14} color={T.bg} strokeWidth={3} />}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ONBOARDING — equipment selection, shown once right after the name prompt */
+function EquipmentOnboarding({ initial, onFinish }) {
+  const [selected, setSelected] = useState(initial);
+  const toggle = (id) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "48px 24px 24px" }}>
+      <div style={{ fontSize: 22, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.3, color: T.text }}>Set up your gym</div>
+      <div style={{ fontSize: 13, marginTop: 6, marginBottom: 24, color: T.textMute }}>
+        Select the equipment you have. This shapes which exercises show up — you can change it anytime in Settings.
+      </div>
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        <EquipmentPicker selected={selected} onToggle={toggle} />
+      </div>
+      <button onClick={() => onFinish(selected)} style={{
+        marginTop: 20, borderRadius: 8, padding: "16px 0",
+        fontWeight: 900, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 15,
+        backgroundImage: "linear-gradient(135deg, #FF8C42, #E85A1F)",
+        boxShadow: "0 0 18px rgba(255,106,43,0.35), inset 0 1px 1px rgba(255,255,255,0.25)",
+        color: T.bg, border: "none",
+      }}>
+        Finish Setup
+      </button>
+    </div>
+  );
+}
+
+/* SETTINGS VIEW — equipment is editable anytime; only affects future workouts */
+function SettingsView({ equipment, onBack, onToggleEquipment }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
+      <div style={{ padding: "32px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", padding: 0, display: "flex" }}>
+          <ArrowLeft size={20} color={T.textMute} />
+        </button>
+        <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, color: T.text }}>Settings</div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, color: T.textMute }}>
+          Equipment
+        </div>
+        <EquipmentPicker selected={equipment} onToggle={onToggleEquipment} />
+        <div style={{ fontSize: 12, marginTop: 12, color: T.textFaint }}>
+          Changes only affect future workouts — your logged history stays exactly as recorded.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* REST TIMER — manual start only, never auto-starts between sets. Rendered
+   with key={idx} from Session so it fully resets on every exercise change. */
+function RestTimer() {
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [running, setRunning] = useState(false);
+
+  useEffect(() => {
+    if (!running) return;
+    if (secondsLeft <= 0) {
+      setRunning(false);
+      playTimerDoneSound();
+      return;
+    }
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [running, secondsLeft]);
+
+  const start = (d) => {
+    setSecondsLeft(d);
+    setRunning(true);
+  };
+  const cancel = () => {
+    setRunning(false);
+    setSecondsLeft(0);
+  };
+  const addTime = () => setSecondsLeft((s) => s + 15);
+
+  const mm = Math.floor(secondsLeft / 60);
+  const ss = secondsLeft % 60;
+
+  return (
+    <div style={{ borderRadius: 10, padding: 14, backgroundColor: T.surface, border: `1px solid ${T.line}`, marginTop: 8, marginBottom: 16 }}>
+      {!running ? (
+        <React.Fragment>
+          <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: T.textMute, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+            <TimerIcon size={13} />
+            Rest Timer
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[30, 60, 90, 120].map((d) => (
+              <button key={d} onClick={() => start(d)} style={{
+                flex: 1, padding: "10px 0", borderRadius: 8, fontSize: 13, fontWeight: 700,
+                backgroundColor: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+              }}>
+                <PlayIcon size={11} color={T.accent} />
+                {d < 60 ? `${d}s` : `${d / 60}m`}
+              </button>
+            ))}
+          </div>
+        </React.Fragment>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: T.textMute }}>Resting</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: T.accent, fontVariantNumeric: "tabular-nums" }}>
+              {mm}:{String(ss).padStart(2, "0")}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={addTime} style={{
+              width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: T.surfaceRaised, border: `1px solid ${T.line}`,
+            }}>
+              <PlusIcon size={16} color={T.textMute} />
+            </button>
+            <button onClick={cancel} style={{
+              width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: T.surfaceRaised, border: `1px solid ${T.line}`,
+            }}>
+              <XIcon size={16} color={T.textMute} />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* PLATE CALCULATOR — only reachable if barbell is in the user's equipment */
+const STANDARD_PLATES_KG = [25, 20, 15, 10, 5, 2.5, 1.25];
+function calcPlates(target, barWeight) {
+  let remaining = Math.max(0, (target - barWeight) / 2);
+  const breakdown = [];
+  STANDARD_PLATES_KG.forEach((p) => {
+    const count = Math.floor(remaining / p + 1e-9);
+    if (count > 0) {
+      breakdown.push({ plate: p, count });
+      remaining = Math.round((remaining - count * p) * 100) / 100;
+    }
+  });
+  return { breakdown, remainder: remaining };
+}
+
+function PlateCalculator({ onBack }) {
+  const [target, setTarget] = useState("60");
+  const [barWeight, setBarWeight] = useState("20");
+  const targetNum = parseFloat(target) || 0;
+  const barNum = parseFloat(barWeight) || 0;
+  const { breakdown, remainder } = calcPlates(targetNum, barNum);
+  const achieved = Math.round((barNum + breakdown.reduce((a, b) => a + b.plate * b.count, 0) * 2) * 100) / 100;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
+      <div style={{ padding: "32px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", padding: 0, display: "flex" }}>
+          <ArrowLeft size={20} color={T.textMute} />
+        </button>
+        <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, color: T.text }}>Plate Calculator</div>
+      </div>
+
+      <div style={{ padding: "0 20px", display: "flex", gap: 12, marginBottom: 20 }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ fontSize: 11, display: "block", marginBottom: 4, color: T.textFaint }}>Target weight (kg)</label>
+          <input
+            type="text" inputMode="decimal" value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, fontSize: 16, fontWeight: 700, backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.text }}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ fontSize: 11, display: "block", marginBottom: 4, color: T.textFaint }}>Bar weight (kg)</label>
+          <input
+            type="text" inputMode="decimal" value={barWeight}
+            onChange={(e) => setBarWeight(e.target.value)}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, fontSize: 16, fontWeight: 700, backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.text }}
+          />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px" }}>
+        <div style={{ borderRadius: 10, padding: 16, backgroundColor: T.surface, border: `1px solid ${T.line}`, marginBottom: 16 }}>
+          <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 1, color: T.textMute, marginBottom: 10 }}>Per side</div>
+          {breakdown.length === 0 ? (
+            <div style={{ fontSize: 14, color: T.textFaint }}>Just the bar — no plates needed.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {breakdown.map((b) => (
+                <div key={b.plate} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{
+                      width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+                      backgroundImage: "linear-gradient(135deg, #FF8C42, #E85A1F)", color: T.bg, fontWeight: 900, fontSize: 11,
+                    }}>{b.plate}</div>
+                    <div style={{ fontSize: 14, color: T.text }}>{b.plate} kg plate{b.count > 1 ? "s" : ""}</div>
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.textMute }}>× {b.count}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {remainder > 0 && (
+            <div style={{ fontSize: 12, marginTop: 10, color: T.textFaint }}>
+              {remainder}kg per side can't be made with standard plates (25/20/15/10/5/2.5/1.25kg).
+            </div>
+          )}
+        </div>
+
+        <div style={{ borderRadius: 10, padding: 12, textAlign: "center", backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
+          <div style={{ fontSize: 20, fontWeight: 900, color: T.accent }}>{achieved}</div>
+          <div style={{ fontSize: 11, textTransform: "uppercase", color: T.textMute }}>Total kg loaded</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ROOT APP */
 function App() {
-  const [view, setView] = useState("home");
+  const [username, setUsername] = useState(() => loadUsername());
+  const [equipment, setEquipment] = useState(() => loadEquipment());
+  const [view, setView] = useState(() => (loadUsername() ? "home" : "onboarding-name"));
   const [activeDay, setActiveDay] = useState(null);
+  const [activeExercises, setActiveExercises] = useState(null);
   const [sessions, setSessions] = useState(() => loadSessions());
   const [lastSession, setLastSession] = useState(null);
 
@@ -924,6 +1334,32 @@ function App() {
     });
   });
   const stats = { totalSessions: sessions.length, totalKg: Math.round(totalKg) };
+
+  const handleNameSubmit = (name) => {
+    setUsername(name);
+    saveUsername(name);
+    setView("onboarding-equipment");
+  };
+
+  const handleOnboardingEquipmentFinish = (selected) => {
+    setEquipment(selected);
+    saveEquipment(selected);
+    setView("home");
+  };
+
+  const handleToggleEquipment = (id) => {
+    setEquipment((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      saveEquipment(next);
+      return next;
+    });
+  };
+
+  const handleStart = (dayId) => {
+    setActiveDay(dayId);
+    setActiveExercises(buildDayExercises(dayId, equipment));
+    setView("session");
+  };
 
   const handleFinish = (dayId, exercises, log) => {
     const record = {
@@ -947,17 +1383,38 @@ function App() {
   return (
     <div style={{ position: "relative", width: "100%", maxWidth: 480, margin: "0 auto", height: "100vh", overflow: "hidden" }}>
       <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent", position: "relative" }}>
-        {view === "home" && (
-          <Home onStart={(dayId) => { setActiveDay(dayId); setView("session"); }} onHistory={() => setView("history")} lastByDay={lastByDay} stats={stats} />
+        {view === "onboarding-name" && (
+          <NamePrompt onSubmit={handleNameSubmit} />
         )}
-        {view === "session" && (
-          <Session dayId={activeDay} onFinish={handleFinish} onExit={() => setView("home")} />
+        {view === "onboarding-equipment" && (
+          <EquipmentOnboarding initial={equipment} onFinish={handleOnboardingEquipmentFinish} />
+        )}
+        {view === "home" && (
+          <Home
+            onStart={handleStart}
+            onHistory={() => setView("history")}
+            onSettings={() => setView("settings")}
+            onPlates={() => setView("plates")}
+            lastByDay={lastByDay}
+            stats={stats}
+            name={username}
+            equipment={equipment}
+          />
+        )}
+        {view === "session" && activeExercises && (
+          <Session dayId={activeDay} exercises={activeExercises} onFinish={handleFinish} onExit={() => setView("home")} />
         )}
         {view === "summary" && lastSession && (
           <Summary session={lastSession} onDone={() => setView("home")} />
         )}
         {view === "history" && (
           <HistoryView sessions={sessions} onBack={() => setView("home")} onClear={handleClear} />
+        )}
+        {view === "settings" && (
+          <SettingsView equipment={equipment} onBack={() => setView("home")} onToggleEquipment={handleToggleEquipment} />
+        )}
+        {view === "plates" && (
+          <PlateCalculator onBack={() => setView("home")} />
         )}
       </div>
       <div className="eldforge-grain" />
