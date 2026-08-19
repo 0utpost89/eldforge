@@ -23,15 +23,20 @@
   #root { height: 100vh; }
   input:focus { outline: none; }
   button { font-family: inherit; cursor: pointer; }
-  @keyframes wobble {
-    0% { transform: translate(0,0) rotate(0deg); }
-    20% { transform: translate(-6px,3px) rotate(-1.4deg); }
-    40% { transform: translate(5px,-3px) rotate(1.4deg); }
-    60% { transform: translate(-4px,2px) rotate(-0.8deg); }
-    80% { transform: translate(3px,-2px) rotate(0.8deg); }
-    100% { transform: translate(0,0) rotate(0deg); }
+  @keyframes impactShake {
+    0% { transform: translate(0,0); }
+    8% { transform: translate(-2px,7px); }
+    18% { transform: translate(3px,-5px); }
+    28% { transform: translate(-5px,3px); }
+    38% { transform: translate(4px,-3px); }
+    48% { transform: translate(-3px,2px); }
+    58% { transform: translate(3px,-1px); }
+    68% { transform: translate(-2px,1px); }
+    78% { transform: translate(1px,-1px); }
+    88% { transform: translate(-1px,0); }
+    100% { transform: translate(0,0); }
   }
-  .setlog-wobble { animation: wobble 0.4s ease; }
+  .setlog-impact { animation: impactShake 0.42s cubic-bezier(.36,.07,.19,.97); }
   .eldforge-grain {
     position: absolute; inset: 0; pointer-events: none; z-index: 50;
     opacity: 0.5; mix-blend-mode: overlay;
@@ -314,56 +319,61 @@ function getAudioContext() {
   return _audioCtx;
 }
 
-/* SOUND — bright high-pitched metal-on-metal clink (like dumbbell plates touching) */
-function playClankSound() {
+/* SOUND — deep, weighted thud for advancing to the next exercise, like a
+   plate dropped on the floor after maxing out a set. Deliberately dark and
+   low — no bright metallic ring — paired with the impact-shake animation. */
+function playDropSound() {
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
 
-    const bufferSize = Math.floor(ctx.sampleRate * 0.012);
+    const master = ctx.createGain();
+    master.gain.value = 0.9;
+    master.connect(ctx.destination);
+
+    // sub-boom — the floor absorbing the impact, pitch falls fast
+    const boom = ctx.createOscillator();
+    boom.type = "sine";
+    boom.frequency.setValueAtTime(120, now);
+    boom.frequency.exponentialRampToValueAtTime(38, now + 0.16);
+    const boomGain = ctx.createGain();
+    boomGain.gain.setValueAtTime(0.9, now);
+    boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    boom.connect(boomGain);
+    boomGain.connect(master);
+    boom.start(now);
+    boom.stop(now + 0.32);
+
+    // dark, broadband knock — the plate's mass hitting the floor, no ring
+    const bufferSize = Math.floor(ctx.sampleRate * 0.04);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
-    const master = ctx.createGain();
-    master.gain.value = 0.85;
-    master.connect(ctx.destination);
+    const knockSrc = ctx.createBufferSource();
+    knockSrc.buffer = buffer;
+    const knockFilter = ctx.createBiquadFilter();
+    knockFilter.type = "lowpass";
+    knockFilter.frequency.value = 700;
+    knockFilter.Q.value = 0.7;
+    const knockGain = ctx.createGain();
+    knockGain.gain.setValueAtTime(0.55, now);
+    knockGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+    knockSrc.connect(knockFilter);
+    knockFilter.connect(knockGain);
+    knockGain.connect(master);
+    knockSrc.start(now);
+    knockSrc.stop(now + 0.1);
 
-    // bright, high, tightly-tuned resonances — inharmonic spacing so it clinks, not chimes musically
-    const partials = [
-      { freq: 1900, q: 30, decay: 0.28, level: 0.5 },
-      { freq: 2600, q: 34, decay: 0.24, level: 0.44 },
-      { freq: 3400, q: 36, decay: 0.2, level: 0.36 },
-      { freq: 4300, q: 38, decay: 0.16, level: 0.28 },
-      { freq: 5600, q: 32, decay: 0.12, level: 0.2 },
-      { freq: 7200, q: 28, decay: 0.08, level: 0.14 },
-    ];
-
-    partials.forEach((p) => {
-      const src = ctx.createBufferSource();
-      src.buffer = buffer;
-      const bp = ctx.createBiquadFilter();
-      bp.type = "bandpass";
-      bp.frequency.value = p.freq;
-      bp.Q.value = p.q;
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(p.level, now);
-      g.gain.exponentialRampToValueAtTime(0.0005, now + p.decay);
-      src.connect(bp);
-      bp.connect(g);
-      g.connect(master);
-      src.start(now);
-      src.stop(now + p.decay + 0.03);
-    });
-
-    // hairline sharp attack click to sharpen the transient
+    // hairline transient so the impact reads as a click, not just a boom
     const clickSrc = ctx.createBufferSource();
     clickSrc.buffer = buffer;
     const clickFilter = ctx.createBiquadFilter();
-    clickFilter.type = "highpass";
-    clickFilter.frequency.value = 6000;
+    clickFilter.type = "bandpass";
+    clickFilter.frequency.value = 1800;
+    clickFilter.Q.value = 1.2;
     const clickGain = ctx.createGain();
-    clickGain.gain.setValueAtTime(0.4, now);
+    clickGain.gain.setValueAtTime(0.25, now);
     clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
     clickSrc.connect(clickFilter);
     clickFilter.connect(clickGain);
@@ -769,9 +779,9 @@ function Session({ dayId, exercises, onFinish, onExit }) {
   const next = () => {
     const isLast = idx >= exercises.length - 1;
     if (isLast) playCheerSound();
-    else playClankSound();
+    else playDropSound();
     setWobble(true);
-    setTimeout(() => setWobble(false), 400);
+    setTimeout(() => setWobble(false), 420);
     if (idx < exercises.length - 1) {
       setIdx(idx + 1);
     } else {
@@ -785,7 +795,7 @@ function Session({ dayId, exercises, onFinish, onExit }) {
   const prevExercise = () => { if (idx > 0) setIdx(idx - 1); };
 
   return (
-    <div className={wobble ? "setlog-wobble" : ""} style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
+    <div className={wobble ? "setlog-impact" : ""} style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
       <div style={{ padding: "24px 20px 12px", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onExit} style={{ background: "none", border: "none", padding: 0, display: "flex" }}>
           <ArrowLeft size={20} color={T.textMute} />
