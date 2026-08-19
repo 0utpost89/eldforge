@@ -103,9 +103,11 @@ const EX = {
     { id: "shoulder-press", name: "Standing Shoulder Press", type: "reps", sets: 4, targetReps: "8-12", videoId: "eYHPM-wWYKs", equipment: "dumbbells", alts: [
       { id: "arnold-press", name: "Arnold Press", videoId: "ris9tKqMwgU", equipment: "dumbbells" },
       { id: "single-arm-press", name: "Single-Arm Shoulder Press", videoId: "JyJJLEnCcUo", equipment: "dumbbells" },
+      { id: "barbell-ohp", name: "Barbell Overhead Press", videoId: "a81SaIpjGlA", equipment: "barbell" },
     ] },
     { id: "chest-squeeze", name: "Standing Chest Squeeze Press", type: "reps", sets: 3, targetReps: "10-12", videoId: "OjJ0So34qtE", equipment: "dumbbells", alts: [
       { id: "floor-press", name: "Dumbbell Floor Press", videoId: "qHCI9rK7HqM", equipment: "dumbbells" },
+      { id: "barbell-bench-press", name: "Barbell Bench Press", videoId: "Pp8rHcFVIYg", equipment: "barbell" },
     ] },
     { id: "tricep-ext", name: "Seated Overhead Tricep Extension", type: "reps", sets: 3, targetReps: "12", videoId: "dxdr8iSRLA8", equipment: "dumbbells", alts: [
       { id: "standing-tricep-ext", name: "Standing Overhead Tricep Extension", videoId: "6I8v2frZTIg", equipment: "dumbbells" },
@@ -118,9 +120,11 @@ const EX = {
   pull: [
     { id: "rows", name: "Bent-Over Dumbbell Rows", type: "reps", sets: 4, targetReps: "10-12", videoId: "c-gt-zzoa_A", equipment: "dumbbells", alts: [
       { id: "single-arm-row", name: "Single-Arm Dumbbell Row", videoId: "gfUg6qWohTk", equipment: "dumbbells" },
+      { id: "barbell-row", name: "Barbell Bent-Over Row", videoId: "rqTOAM8WoeM", equipment: "barbell" },
     ] },
     { id: "curls", name: "Standing Bicep Curls", type: "reps", sets: 3, targetReps: "12", videoId: "ykJmrZ5v0Oo", equipment: "dumbbells", alts: [
       { id: "hammer-curls", name: "Hammer Curls", videoId: "4BRAf2BajWw", equipment: "dumbbells" },
+      { id: "barbell-curl", name: "Barbell Curl", videoId: "JJB8XgKltA8", equipment: "barbell" },
     ] },
     { id: "rear-delt", name: "Seated Rear Delt Flyes", type: "reps", sets: 3, targetReps: "12", videoId: "KoRDmXocJII", equipment: "dumbbells", alts: [
       { id: "standing-rear-delt", name: "Standing Bent-Over Rear Delt Fly", videoId: "yqvsu1YAi0Q", equipment: "dumbbells" },
@@ -132,6 +136,7 @@ const EX = {
   legs: [
     { id: "goblet-squat", name: "Goblet Squats", type: "reps", sets: 4, targetReps: "10-12", videoId: "gCESNsDsbqk", equipment: "dumbbells", alts: [
       { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", videoId: "TEN65PjaP0Q", equipment: "dumbbells" },
+      { id: "barbell-back-squat", name: "Barbell Back Squat", videoId: "PGFvWqAQRm8", equipment: "barbell" },
     ] },
     { id: "reverse-lunge", name: "Reverse Lunges", type: "reps", sets: 3, targetReps: "10 / leg", videoId: "Q2k3kYbtOcI", equipment: "bodyweight", alts: [
       { id: "walking-lunges", name: "Walking Lunges", videoId: "_qSuiZ62vqI", equipment: "bodyweight" },
@@ -146,6 +151,7 @@ const EX = {
   full: [
     { id: "thrusters", name: "Dumbbell Thrusters", type: "reps", sets: 3, targetReps: "10", videoId: "eDNt3biU9I4", equipment: "dumbbells", alts: [
       { id: "squat-to-press", name: "Squat to Press", videoId: "ffmPh_FsU8A", equipment: "dumbbells" },
+      { id: "barbell-thruster", name: "Barbell Thruster", videoId: "Zvt5-mugUco", equipment: "barbell" },
     ] },
     { id: "renegade-row", name: "Renegade Rows", type: "reps", sets: 3, targetReps: "8 / side", videoId: "wTqlJ0aoJlM", equipment: "dumbbells", alts: [
       { id: "bear-crawl", name: "Bear Crawl Hold", videoId: "lRolga8vTyc", equipment: "bodyweight" },
@@ -163,7 +169,7 @@ const EX = {
    included regardless of selection; everything else requires a match. */
 const EQUIPMENT_OPTIONS = [
   { id: "dumbbells", label: "Dumbbells", note: "Powers most of the exercise pool." },
-  { id: "barbell", label: "Barbell", note: "Unlocks the plate calculator." },
+  { id: "barbell", label: "Barbell", note: "Adds barbell variants and unlocks the plate calculator." },
 ];
 
 function buildDayExercises(dayId, equipment) {
