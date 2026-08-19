@@ -183,7 +183,7 @@ function buildDayExercises(dayId, equipment) {
       ].filter(allowed);
       if (variants.length === 0) return null;
       const [primary, ...alts] = variants;
-      return { ...ex, id: primary.id, name: primary.name, videoId: primary.videoId, alts };
+      return { ...ex, id: primary.id, name: primary.name, videoId: primary.videoId, equipment: primary.equipment, alts };
     })
     .filter(Boolean);
 }
@@ -724,7 +724,7 @@ function Session({ dayId, exercises, onFinish, onExit }) {
   const exercise = exercises[idx];
   const sets = log[idx];
 
-  const variantsFor = (ex) => [{ id: ex.id, name: ex.name, videoId: ex.videoId }, ...(ex.alts || [])];
+  const variantsFor = (ex) => [{ id: ex.id, name: ex.name, videoId: ex.videoId, equipment: ex.equipment }, ...(ex.alts || [])];
   const variants = variantsFor(exercise);
   const currentVariant = variants[variantSel[idx] % variants.length];
 
@@ -872,6 +872,7 @@ function Session({ dayId, exercises, onFinish, onExit }) {
           + Add set
         </button>
 
+        {currentVariant.equipment === "barbell" && <InlinePlateCalc key={currentVariant.id} />}
         <RestTimer key={idx} />
       </div>
 
@@ -1244,14 +1245,74 @@ function calcPlates(target, barWeight) {
   return { breakdown, remainder: remaining };
 }
 
-function PlateCalculator({ onBack }) {
-  const [target, setTarget] = useState("60");
-  const [barWeight, setBarWeight] = useState("20");
+/* Shared calculator body — inputs + per-side breakdown + total. Used both by
+   the standalone Plate Calculator page and the inline card on barbell
+   exercises in a session. */
+function PlateCalcCore({ initialTarget = "60", initialBarWeight = "20" }) {
+  const [target, setTarget] = useState(initialTarget);
+  const [barWeight, setBarWeight] = useState(initialBarWeight);
   const targetNum = parseFloat(target) || 0;
   const barNum = parseFloat(barWeight) || 0;
   const { breakdown, remainder } = calcPlates(targetNum, barNum);
   const achieved = Math.round((barNum + breakdown.reduce((a, b) => a + b.plate * b.count, 0) * 2) * 100) / 100;
 
+  return (
+    <React.Fragment>
+      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ fontSize: 11, display: "block", marginBottom: 4, color: T.textFaint }}>Target weight (kg)</label>
+          <input
+            type="text" inputMode="decimal" value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, fontSize: 16, fontWeight: 700, backgroundColor: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text }}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ fontSize: 11, display: "block", marginBottom: 4, color: T.textFaint }}>Bar weight (kg)</label>
+          <input
+            type="text" inputMode="decimal" value={barWeight}
+            onChange={(e) => setBarWeight(e.target.value)}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, fontSize: 16, fontWeight: 700, backgroundColor: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text }}
+          />
+        </div>
+      </div>
+
+      <div style={{ borderRadius: 10, padding: 14, backgroundColor: T.surfaceRaised, border: `1px solid ${T.line}`, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 1, color: T.textMute, marginBottom: 10 }}>Per side</div>
+        {breakdown.length === 0 ? (
+          <div style={{ fontSize: 14, color: T.textFaint }}>Just the bar — no plates needed.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {breakdown.map((b) => (
+              <div key={b.plate} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{
+                    width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+                    backgroundImage: "linear-gradient(135deg, #FF8C42, #E85A1F)", color: T.bg, fontWeight: 900, fontSize: 11,
+                  }}>{b.plate}</div>
+                  <div style={{ fontSize: 14, color: T.text }}>{b.plate} kg plate{b.count > 1 ? "s" : ""}</div>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.textMute }}>× {b.count}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {remainder > 0 && (
+          <div style={{ fontSize: 12, marginTop: 10, color: T.textFaint }}>
+            {remainder}kg per side can't be made with standard plates (25/20/15/10/5/2.5/1.25kg).
+          </div>
+        )}
+      </div>
+
+      <div style={{ borderRadius: 10, padding: 12, textAlign: "center", backgroundColor: T.surfaceRaised, border: `1px solid ${T.line}` }}>
+        <div style={{ fontSize: 20, fontWeight: 900, color: T.accent }}>{achieved}</div>
+        <div style={{ fontSize: 11, textTransform: "uppercase", color: T.textMute }}>Total kg loaded</div>
+      </div>
+    </React.Fragment>
+  );
+}
+
+function PlateCalculator({ onBack }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "transparent" }}>
       <div style={{ padding: "32px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
@@ -1260,59 +1321,35 @@ function PlateCalculator({ onBack }) {
         </button>
         <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, color: T.text }}>Plate Calculator</div>
       </div>
-
-      <div style={{ padding: "0 20px", display: "flex", gap: 12, marginBottom: 20 }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ fontSize: 11, display: "block", marginBottom: 4, color: T.textFaint }}>Target weight (kg)</label>
-          <input
-            type="text" inputMode="decimal" value={target}
-            onChange={(e) => setTarget(e.target.value)}
-            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, fontSize: 16, fontWeight: 700, backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.text }}
-          />
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ fontSize: 11, display: "block", marginBottom: 4, color: T.textFaint }}>Bar weight (kg)</label>
-          <input
-            type="text" inputMode="decimal" value={barWeight}
-            onChange={(e) => setBarWeight(e.target.value)}
-            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, fontSize: 16, fontWeight: 700, backgroundColor: T.surface, border: `1px solid ${T.line}`, color: T.text }}
-          />
-        </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
+        <PlateCalcCore />
       </div>
+    </div>
+  );
+}
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px" }}>
-        <div style={{ borderRadius: 10, padding: 16, backgroundColor: T.surface, border: `1px solid ${T.line}`, marginBottom: 16 }}>
-          <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 1, color: T.textMute, marginBottom: 10 }}>Per side</div>
-          {breakdown.length === 0 ? (
-            <div style={{ fontSize: 14, color: T.textFaint }}>Just the bar — no plates needed.</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {breakdown.map((b) => (
-                <div key={b.plate} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{
-                      width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-                      backgroundImage: "linear-gradient(135deg, #FF8C42, #E85A1F)", color: T.bg, fontWeight: 900, fontSize: 11,
-                    }}>{b.plate}</div>
-                    <div style={{ fontSize: 14, color: T.text }}>{b.plate} kg plate{b.count > 1 ? "s" : ""}</div>
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.textMute }}>× {b.count}</div>
-                </div>
-              ))}
-            </div>
-          )}
-          {remainder > 0 && (
-            <div style={{ fontSize: 12, marginTop: 10, color: T.textFaint }}>
-              {remainder}kg per side can't be made with standard plates (25/20/15/10/5/2.5/1.25kg).
-            </div>
-          )}
+/* INLINE PLATE CALCULATOR — shown on any exercise variant that uses a
+   barbell, so plates can be worked out right where the weight is logged.
+   Collapsed by default to keep the session screen from getting cluttered. */
+function InlinePlateCalc() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderRadius: 10, padding: 14, backgroundColor: T.surface, border: `1px solid ${T.line}`, marginTop: 8, marginBottom: 16 }}>
+      <button onClick={() => setOpen((o) => !o)} style={{
+        width: "100%", background: "none", border: "none", padding: 0, display: "flex",
+        alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: T.textMute, display: "flex", alignItems: "center", gap: 6 }}>
+          <CalcIcon size={13} />
+          Plate Calculator
         </div>
-
-        <div style={{ borderRadius: 10, padding: 12, textAlign: "center", backgroundColor: T.surface, border: `1px solid ${T.line}` }}>
-          <div style={{ fontSize: 20, fontWeight: 900, color: T.accent }}>{achieved}</div>
-          <div style={{ fontSize: 11, textTransform: "uppercase", color: T.textMute }}>Total kg loaded</div>
+        <ChevronRight size={16} color={T.textFaint} style={{ transform: open ? "rotate(90deg)" : "none" }} />
+      </button>
+      {open && (
+        <div style={{ marginTop: 14 }}>
+          <PlateCalcCore />
         </div>
-      </div>
+      )}
     </div>
   );
 }
